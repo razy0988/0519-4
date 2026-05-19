@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 拔河比賽－小學數學乘法</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Microsoft JhengHei", Arial, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #83eaf1 0%, #63a4ff 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      color: white;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.25);
+      margin-bottom: 18px;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .screen { width: 100%; }
+    .hidden { display: none !important; }
+
+    .intro-screen { text-align: center; padding: 20px 10px; }
+
+    .intro-card {
+      background: linear-gradient(135deg, #ffffff, #eef7ff);
+      border-radius: 28px;
+      padding: 34px 26px;
+      box-shadow: 0 12px 34px rgba(0,0,0,0.16);
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .intro-card h2 { font-size: 2.6rem; color: #2d3436; margin-bottom: 12px; }
+
+    .intro-card p {
+      color: #4d5656;
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin-bottom: 22px;
+      font-weight: 700;
+    }
+
+    .student-form { display: grid; gap: 14px; margin-top: 18px; }
+
+    .student-form input {
+      width: 100%;
+      height: 58px;
+      border-radius: 16px;
+      border: 3px solid #dfe6e9;
+      padding: 0 16px;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .student-form input:focus {
+      outline: none;
+      border-color: #6c5ce7;
+      box-shadow: 0 0 0 4px rgba(108,92,231,0.15);
+    }
+
+    .intro-start-btn {
+      margin-top: 20px;
+      width: 100%;
+      height: 62px;
+      border: none;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #6c5ce7, #0984e3);
+      color: white;
+      font-size: 1.35rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 980px;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 24px;
+      padding: 26px;
+      box-shadow: 0 14px 45px rgba(0, 0, 0, 0.28);
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .score-card {
+      padding: 12px 16px;
+      border-radius: 16px;
+      color: white;
+      font-weight: 800;
+      font-size: 1.1rem;
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
+    }
+
+    .player-score { background: linear-gradient(135deg, #2ecc71, #1e9c57); }
+    .computer-score { background: linear-gradient(135deg, #ff6b6b, #e74c3c); text-align: right; }
+
+    .timer-main {
+      background: #263238;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 16px;
+      font-size: 1.5rem;
+      font-weight: 900;
+      min-width: 96px;
+      text-align: center;
+    }
+
+    .control-panel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 14px;
+      border-radius: 18px;
+      background: #f5f7fb;
+      border: 2px solid rgba(99, 164, 255, 0.22);
+    }
+
+    .control-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-weight: 900;
+      color: #2d3436;
+      font-size: 0.95rem;
+    }
+
+    .control-panel select {
+      height: 42px;
+      border-radius: 12px;
+      border: 2px solid #dfe6e9;
+      padding: 0 10px;
+      font-size: 1rem;
+      font-weight: 800;
+      background: white;
+      color: #2d3436;
+    }
+
+    .game-status {
+      text-align: center;
+      padding: 13px 16px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      border-radius: 16px;
+      margin-bottom: 18px;
+      background: #fff7d6;
+      color: #8a5a00;
+    }
+
+    .ai-coach {
+      margin-bottom: 18px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #f3e7ff, #e7f0ff);
+      border: 2px solid rgba(107, 91, 255, 0.18);
+      color: #333;
+      font-weight: 700;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .ai-icon { font-size: 1.7rem; flex: 0 0 auto; }
+
+    .tug-container {
+      position: relative;
+      height: 160px;
+      background: linear-gradient(to bottom, #d7f7ff 0%, #b9f2df 65%, #89cf61 66%, #6eb748 100%);
+      border-radius: 22px;
+      margin: 24px 0;
+      overflow: hidden;
+      border: 4px solid rgba(44, 62, 80, 0.2);
+    }
+
+    .center-line {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 100%;
+      background: repeating-linear-gradient(to bottom, white 0 14px, #455a64 14px 28px);
+      opacity: 0.85;
+      z-index: 1;
+    }
+
+    .finish-left, .finish-right {
+      position: absolute;
+      top: 0;
+      width: 4px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 1;
+    }
+
+    .finish-left { left: 12%; }
+    .finish-right { right: 12%; }
+
+    .rope {
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 430px;
+      height: 14px;
+      background: repeating-linear-gradient(90deg, #8d4d20 0 10px, #a75b28 10px 20px);
+      border-radius: 999px;
+      transition: left 0.28s ease, transform 0.12s ease;
+      z-index: 3;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.22);
+    }
+
+    .rope.hit { animation: ropeHit 0.28s ease; }
+
+    @keyframes ropeHit {
+      0% { transform: translateX(-50%) scaleX(1); }
+      35% { transform: translateX(-50%) scaleX(1.08); }
+      70% { transform: translateX(-50%) scaleX(0.96); }
+      100% { transform: translateX(-50%) scaleX(1); }
+    }
+
+    .flag {
+      position: absolute;
+      top: 51px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 42px;
+      height: 38px;
+      background: #e74c3c;
+      border-radius: 6px;
+      transition: left 0.28s ease;
+      z-index: 4;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.22);
+    }
+
+    .marker {
+      position: absolute;
+      bottom: 39px;
+      font-size: 2.7rem;
+      z-index: 5;
+      transition: left 0.28s ease, transform 0.2s ease;
+      filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.2));
+    }
+
+    .marker.pull { animation: pullBounce 0.35s ease; }
+
+    @keyframes pullBounce {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+
+    .combo {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #ff6f00;
+      font-size: 1.3rem;
+      font-weight: 900;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .combo.show { opacity: 1; transform: translateX(-50%) scale(1.08); }
+
+    .answers-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 10px;
+    }
+
+    .answer-box { padding: 20px; border-radius: 20px; text-align: center; min-height: 260px; }
+    .player-answer-box { background: linear-gradient(135deg, #e9fff1, #c6f6d5); border: 3px solid #2ecc71; }
+    .computer-answer-box { background: linear-gradient(135deg, #fff0f0, #ffd6d6); border: 3px solid #ff6b6b; }
+    .answer-box h3 { color: #2d3436; margin-bottom: 10px; font-size: 1.35rem; }
+
+    .question { font-size: 2.2rem; font-weight: 900; margin: 18px 0; color: #17202a; }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 96px 76px;
+      gap: 10px;
+      align-items: stretch;
+      margin: 10px auto 12px;
+      max-width: 520px;
+    }
+
+    .answer-input {
+      width: 100%;
+      min-width: 0;
+      height: 64px;
+      padding: 10px 16px;
+      font-size: 1.65rem;
+      font-weight: 900;
+      text-align: center;
+      border: 3px solid #b2bec3;
+      border-radius: 14px;
+      outline: none;
+      background: white;
+    }
+
+    .answer-input:focus { border-color: #2ecc71; box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.15); }
+
+    .small-btn, .submit-btn {
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform 0.16s ease, opacity 0.16s ease;
+    }
+
+    .submit-btn {
+      min-width: 96px;
+      height: 64px;
+      padding: 0 18px;
+      background: #3498db;
+      color: white;
+      font-size: 1.1rem;
+      white-space: nowrap;
+    }
+
+    .small-btn {
+      min-width: 76px;
+      height: 64px;
+      padding: 0 12px;
+      background: #f1f2f6;
+      color: #2d3436;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    .small-btn:hover, .submit-btn:hover, .start-btn:hover { transform: scale(1.04); }
+
+    .hint { font-size: 0.95rem; color: #4d5656; font-weight: 700; margin-top: 6px; }
+
+    .feedback {
+      margin-top: 14px;
+      min-height: 42px;
+      padding: 11px;
+      border-radius: 14px;
+      font-weight: 900;
+      background: rgba(255, 255, 255, 0.62);
+      color: #2d3436;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.4;
+    }
+
+    .button-row { display: grid; grid-template-columns: 1fr 180px; gap: 12px; margin-top: 20px; }
+
+    .pause-btn {
+      padding: 16px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffb347, #ff8c42);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 0.16s ease, opacity 0.16s ease;
+    }
+
+    .pause-btn:hover { transform: scale(1.04); }
+    .pause-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .start-btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      font-size: 1.35rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #6c5ce7, #0984e3);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: transform 0.16s ease, opacity 0.16s ease;
+    }
+
+    .start-btn:disabled, .submit-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .winner-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s;
+    }
+
+    .winner-overlay.show { opacity: 1; pointer-events: auto; }
+
+    .winner-content {
+      width: min(90vw, 560px);
+      text-align: center;
+      color: white;
+      background: linear-gradient(135deg, rgba(108, 92, 231, 0.95), rgba(9, 132, 227, 0.95));
+      border-radius: 24px;
+      padding: 36px 26px;
+      animation: winnerBounce 0.45s ease;
+    }
+
+    @keyframes winnerBounce {
+      0% { transform: scale(0.65); }
+      60% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+
+    .winner-content h2 { font-size: 3rem; margin-bottom: 12px; }
+    .winner-content p { font-size: 1.25rem; line-height: 1.6; margin-bottom: 10px; }
+
+    .play-again-btn {
+      margin-top: 22px;
+      padding: 14px 34px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      background: white;
+      color: #0984e3;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 760px) {
+      .top-row, .answers-container, .control-panel, .button-row { grid-template-columns: 1fr; }
+      .computer-score { text-align: left; }
+      .rope { width: 300px; }
+      .question { font-size: 1.8rem; }
+      .input-row { grid-template-columns: 1fr 84px 68px; max-width: 100%; }
+      .answer-input, .submit-btn, .small-btn { height: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🏆 AI 拔河比賽－小學數學乘法</h1>
+
+  <div class="screen intro-screen" id="introScreen">
+    <div class="intro-card">
+      <h2>🏆 AI 拔河數學挑戰</h2>
+      <p>快來挑戰 AI 對手！<br>答對乘法題就能把繩子拉向自己！</p>
+      <div class="student-form">
+        <input type="text" id="studentClass" placeholder="請輸入班級（例如：201）" />
+        <input type="text" id="studentSeat" placeholder="請輸入座號" />
+        <input type="text" id="studentName" placeholder="請輸入姓名" />
+      </div>
+      <button class="intro-start-btn" onclick="enterGame()">開始挑戰</button>
+    </div>
+  </div>
+
+  <div class="game-container hidden" id="gameScreen">
+    <div class="control-panel">
+      <label>作答時間
+        <select id="timeMode" onchange="updateModeHint()">
+          <option value="slow" selected>低年級慢速：10秒</option>
+          <option value="normal">一般：8秒</option>
+          <option value="challenge">挑戰：6秒</option>
+          <option value="adaptive">AI自動調整</option>
+        </select>
+      </label>
+      <label>AI速度
+        <select id="aiMode" onchange="updateModeHint()">
+          <option value="gentle" selected>溫和</option>
+          <option value="normal">一般</option>
+          <option value="active">積極</option>
+        </select>
+      </label>
+      <label>題目難度
+        <select id="questionMode" onchange="updateModeHint()">
+          <option value="auto" selected>自動</option>
+          <option value="warmup">暖身</option>
+          <option value="normal">一般</option>
+          <option value="challenge">挑戰</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="top-row">
+      <div class="score-card player-score">👤 玩家得分：<span id="playerScore">0</span></div>
+      <div class="timer-main" id="roundTimer">10.0</div>
+      <div class="score-card computer-score">🤖 電腦得分：<span id="computerScore">0</span></div>
+    </div>
+
+    <div class="game-status" id="gameStatus">點擊「開始挑戰」開始遊戲！</div>
+
+    <div class="ai-coach" id="aiCoach"><span class="ai-icon">🤖</span><span id="aiCoachText">我是 AI 數學教練：答題時可以直接輸入答案，按 Enter 送出！</span></div>
+
+    <div class="tug-container">
+      <div class="finish-left"></div><div class="finish-right"></div><div class="center-line"></div>
+      <div class="combo" id="comboBadge">🔥 COMBO x2</div>
+      <div class="rope" id="rope"></div><div class="flag" id="flag"></div>
+      <div class="marker" id="playerMarker">🏃</div><div class="marker" id="computerMarker">🤖</div>
+    </div>
+
+    <div class="answers-container">
+      <div class="answer-box player-answer-box">
+        <h3>👤 玩家</h3>
+        <div class="question" id="playerQuestion">準備好了嗎？</div>
+        <div class="input-row">
+          <input id="playerInput" class="answer-input" type="number" inputmode="numeric" placeholder="答案" disabled />
+          <button class="submit-btn" id="submitBtn" onclick="submitPlayerAnswer()" disabled>送出</button>
+          <button class="small-btn" id="clearBtn" onclick="clearPlayerInput()" disabled>清除</button>
+        </div>
+        <div class="hint">快捷鍵：直接輸入數字，Enter 送出，Backspace 刪除</div>
+        <div class="feedback" id="playerFeedback">等待開始</div>
+      </div>
+
+      <div class="answer-box computer-answer-box">
+        <h3>🤖 AI 對手</h3>
+        <div class="question" id="computerQuestion">準備好了嗎？</div>
+        <div class="feedback" id="computerFeedback">AI 對手會依題目難度改變速度與正確率</div>
+        <div class="hint" id="difficultyHint">難度：暖身</div>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button class="start-btn" id="startBtn" onclick="startGame()">開始挑戰</button>
+      <button class="pause-btn" id="pauseBtn" onclick="togglePause()" disabled>⏸ 暫停</button>
+    </div>
+  </div>
+
+  <div class="winner-overlay" id="winnerOverlay">
+    <div class="winner-content">
+      <h2 id="winnerText">🎉 你贏了！</h2>
+      <p id="winnerSubText">太厲害了！</p>
+      <p id="learningReport">AI 學習摘要產生中……</p>
+      <button class="play-again-btn" onclick="resetGame()">再玩一次</button>
+    </div>
+  </div>
+
+  <script>
+    const gameState = { isPlaying:false, canAnswer:false, ropePosition:50, playerScore:0, computerScore:0, playerCombo:0, roundTimer:10, currentRoundLimit:10, roundInterval:null, computerTimeout:null, currentPlayerQuestion:null, currentComputerQuestion:null, history:[], aiSpeedBonus:0, isPaused:false, student:null };
+    const questionsByLevel = { warmup:{label:"暖身",min:1,max:5}, normal:{label:"一般",min:2,max:9}, challenge:{label:"挑戰",min:6,max:9} };
+    function $(id){ return document.getElementById(id); }
+    function randomInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function playBeep(type="correct"){
+      try{ const AudioContext=window.AudioContext||window.webkitAudioContext; const ctx=new AudioContext(); const osc=ctx.createOscillator(); const gain=ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type="sine"; osc.frequency.value=type==="correct"?720:type==="wrong"?180:420; gain.gain.setValueAtTime(0.08,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.18); osc.start(); osc.stop(ctx.currentTime+0.18);}catch(err){}
+    }
+
+    function enterGame(){
+      const classValue=$("studentClass").value.trim(); const seatValue=$("studentSeat").value.trim(); const nameValue=$("studentName").value.trim();
+      if(!classValue||!seatValue||!nameValue){ alert("請先完整輸入班級、座號與姓名！"); return; }
+      gameState.student={className:classValue, seat:seatValue, name:nameValue};
+      $("introScreen").classList.add("hidden"); $("gameScreen").classList.remove("hidden");
+      $("gameStatus").textContent=`歡迎 ${nameValue}！點擊「開始挑戰」開始遊戲！`;
+      updateModeHint();
+    }
+
+    function getPlayerAccuracy(){ if(gameState.history.length===0)return 1; return gameState.history.filter(item=>item.correct).length/gameState.history.length; }
+    function getCurrentLevel(){ const total=gameState.playerScore+gameState.computerScore; const accuracy=getPlayerAccuracy(); const selectedMode=$("questionMode")?$("questionMode").value:"auto"; if(selectedMode!=="auto")return selectedMode; if(total<3)return "warmup"; if(accuracy>=0.75&&gameState.playerScore>=gameState.computerScore)return "challenge"; return "normal"; }
+    function generateQuestion(levelName="normal"){ const level=questionsByLevel[levelName]; const num1=randomInt(level.min,level.max); const num2=randomInt(level.min,level.max); return {num1,num2,question:`${num1} × ${num2} = ?`,answer:num1*num2,level:levelName}; }
+    function generateDifferentQuestions(){ const levelName=getCurrentLevel(); let playerQ=generateQuestion(levelName); let computerQ=generateQuestion(levelName); while(computerQ.question===playerQ.question){ computerQ=generateQuestion(levelName); } updateDifficultyHint(levelName); return {playerQ,computerQ}; }
+
+    function startGame(){
+      gameState.isPlaying=true; gameState.canAnswer=false; gameState.ropePosition=50; gameState.playerScore=0; gameState.computerScore=0; gameState.playerCombo=0; gameState.history=[]; gameState.aiSpeedBonus=0; gameState.isPaused=false;
+      $("startBtn").disabled=true; $("pauseBtn").disabled=false; $("pauseBtn").textContent="⏸ 暫停";
+      $("gameStatus").textContent="遊戲進行中！先把旗子拉到自己終點就獲勝！"; $("aiCoachText").textContent="AI 教練：準備好囉！答對越多，題目會慢慢變難。"; $("playerFeedback").textContent="請看題目並輸入答案"; $("computerFeedback").textContent="AI 對手準備中……"; $("winnerOverlay").classList.remove("show");
+      updateDisplay(); updateRope(); newRound();
+    }
+
+    function newRound(){
+      if(!gameState.isPlaying)return; clearRoundTimers();
+      const {playerQ,computerQ}=generateDifferentQuestions(); gameState.currentPlayerQuestion=playerQ; gameState.currentComputerQuestion=computerQ; gameState.currentRoundLimit=getRoundLimit(); gameState.roundTimer=gameState.currentRoundLimit; gameState.canAnswer=true;
+      $("playerQuestion").textContent=playerQ.question; $("computerQuestion").textContent=computerQ.question; $("playerInput").value=""; $("playerInput").disabled=false; $("submitBtn").disabled=false; $("clearBtn").disabled=false; $("playerFeedback").textContent="你的回合：直接打答案！"; $("computerFeedback").textContent="AI 正在計算……"; syncTimerDisplay(); $("playerInput").focus();
+      startRoundTimer(); scheduleComputerAnswer(computerQ);
+    }
+
+    function syncTimerDisplay(){ $("roundTimer").textContent=gameState.roundTimer.toFixed(1); }
+    function startRoundTimer(){ gameState.roundInterval=setInterval(()=>{ gameState.roundTimer=Math.max(0,gameState.roundTimer-0.1); syncTimerDisplay(); if(gameState.roundTimer<=3){$("roundTimer").style.background="#c0392b";}else if(gameState.roundTimer<=5){$("roundTimer").style.background="#f39c12";}else{$("roundTimer").style.background="#263238";} if(gameState.roundTimer<=0&&gameState.canAnswer){ playerTimeout(); }},100); }
+    function getRoundLimit(){ const mode=$("timeMode")?$("timeMode").value:"slow"; if(mode==="slow")return 10; if(mode==="normal")return 8; if(mode==="challenge")return 6; const recent=gameState.history.slice(-3).filter(item=>typeof item.responseTime==="number"); if(recent.length<2)return 10; const recentAccuracy=recent.filter(item=>item.correct).length/recent.length; const avgTime=recent.reduce((sum,item)=>sum+item.responseTime,0)/recent.length; if(recentAccuracy>=0.8&&avgTime<=3.5)return 7; if(recentAccuracy>=0.7&&avgTime<=5)return 8; return 10; }
+    function getQuestionDifficulty(q){ if(q.num1>=7||q.num2>=7)return "hard"; if(q.num1>=5||q.num2>=5)return "medium"; return "easy"; }
+    function getComputerDelay(difficulty){ const lead=gameState.playerScore-gameState.computerScore; const aiMode=$("aiMode")?$("aiMode").value:"gentle"; const speedOffset=aiMode==="gentle"?1200:aiMode==="active"?-700:0; if(lead>=4)return randomInt(900+speedOffset,2600+speedOffset); if(lead>=2)return randomInt(1200+speedOffset,3200+speedOffset); if(difficulty==="easy")return randomInt(1200+speedOffset,5200+speedOffset); if(difficulty==="medium")return randomInt(3000+speedOffset,7800+speedOffset); return randomInt(5200+speedOffset,10500+speedOffset); }
+    function getComputerAccuracy(difficulty){ const base=difficulty==="easy"?0.86:difficulty==="medium"?0.72:0.58; const playerAhead=gameState.playerScore-gameState.computerScore; if(playerAhead>=4)return 0.82; if(playerAhead>=2)return 0.76; if(playerAhead<=-3)return Math.max(0.45,base-0.12); return base; }
+    function scheduleComputerAnswer(question){ const difficulty=getQuestionDifficulty(question); const delay=Math.max(900,getComputerDelay(difficulty)-gameState.aiSpeedBonus); gameState.computerTimeout=setTimeout(()=>{ if(!gameState.isPlaying||!gameState.canAnswer||gameState.isPaused)return; computerAnswer(question,difficulty); },delay); }
+
+    function submitPlayerAnswer(){
+      if(!gameState.canAnswer||gameState.isPaused)return; const value=$("playerInput").value.trim(); if(value===""){ $("playerFeedback").textContent="先輸入答案再送出喔！"; return; }
+      const selected=Number(value); const correct=gameState.currentPlayerQuestion.answer; const isCorrect=selected===correct; endRoundLock();
+      gameState.history.push({question:gameState.currentPlayerQuestion.question,answer:correct,userAnswer:selected,correct:isCorrect,timeLeft:Number(gameState.roundTimer.toFixed(1)),responseTime:Number((gameState.currentRoundLimit-gameState.roundTimer).toFixed(1)),level:gameState.currentPlayerQuestion.level}); updateAISpeedBonus();
+      if(isCorrect){ gameState.playerScore++; gameState.playerCombo++; const pull=gameState.playerCombo>=3?12:8; gameState.ropePosition-=pull; $("playerFeedback").textContent=`✅ 答對了！${getLocalHint(gameState.currentPlayerQuestion,selected,true)}`; $("computerFeedback").textContent="AI 對手還沒完成，被你搶先了！"; $("aiCoachText").textContent=getCoachFeedback(true,gameState.currentPlayerQuestion,selected); showCombo(); animatePull("player"); playBeep("correct"); }
+      else{ gameState.playerCombo=0; gameState.computerScore++; gameState.ropePosition+=5; $("playerFeedback").textContent=`❌ 答錯了，正確答案是 ${correct}。`; $("computerFeedback").textContent="AI 對手得到機會，往右拉！"; $("aiCoachText").textContent=getCoachFeedback(false,gameState.currentPlayerQuestion,selected); hideCombo(); animatePull("computer"); playBeep("wrong"); }
+      updateDisplay(); updateRope(); nextOrEnd();
+    }
+
+    function computerAnswer(question,difficulty){ const accuracy=getComputerAccuracy(difficulty); const isCorrect=Math.random()<accuracy; endRoundLock(); if(isCorrect){ gameState.computerScore++; gameState.playerCombo=0; gameState.ropePosition+=5; $("computerFeedback").textContent=`✅ AI 答對了！答案是 ${question.answer}`; $("playerFeedback").textContent="AI 先答出來了，下一題搶回來！"; $("aiCoachText").textContent=`AI 教練：這題 ${question.question}，可以想成 ${question.num1} 個 ${question.num2} 相加。`; hideCombo(); animatePull("computer"); playBeep("wrong"); }else{ gameState.playerScore++; gameState.playerCombo++; gameState.ropePosition-=3; $("computerFeedback").textContent=`❌ AI 答錯了！正確答案是 ${question.answer}`; $("playerFeedback").textContent="AI 失誤！你獲得一點優勢。"; $("aiCoachText").textContent="AI 教練：把握機會，下一題答對就能拉更遠！"; showCombo(); animatePull("player"); playBeep("correct"); } updateDisplay(); updateRope(); nextOrEnd(); }
+    function playerTimeout(){ if(!gameState.canAnswer)return; const aiStillThinking=gameState.computerTimeout!==null; endRoundLock(); const q=gameState.currentPlayerQuestion; gameState.playerCombo=0; if(aiStillThinking){ $("playerFeedback").textContent=`⏰ 你超時了！正確答案是 ${q.answer}`; $("computerFeedback").textContent="🤖 AI 也來不及答，這回合平手！"; $("aiCoachText").textContent=`AI 教練：這題 ${q.num1} × ${q.num2} = ${q.answer}，可以再多練幾次。`; playBeep("timeout"); }else{ gameState.computerScore++; gameState.ropePosition+=5; $("playerFeedback").textContent=`⏰ 時間到！正確答案是 ${q.answer}`; $("computerFeedback").textContent="AI 對手已經答完，所以 AI 得分！"; $("aiCoachText").textContent=`AI 教練：${q.num1} × ${q.num2} = ${q.answer}`; animatePull("computer"); playBeep("wrong"); } gameState.history.push({question:q.question,answer:q.answer,userAnswer:"超時",correct:false,timeLeft:0,level:q.level}); updateDisplay(); updateRope(); nextOrEnd(); }
+
+    function endRoundLock(){ gameState.canAnswer=false; clearRoundTimers(); $("playerInput").disabled=true; $("submitBtn").disabled=true; $("clearBtn").disabled=true; }
+    function clearRoundTimers(){ clearInterval(gameState.roundInterval); clearTimeout(gameState.computerTimeout); gameState.roundInterval=null; gameState.computerTimeout=null; }
+    function nextOrEnd(){ setTimeout(()=>{ checkGameEnd(); if(gameState.isPlaying)newRound(); },1450); }
+    function updateDisplay(){ $("playerScore").textContent=gameState.playerScore; $("computerScore").textContent=gameState.computerScore; }
+    function updateRope(){ gameState.ropePosition=Math.max(6,Math.min(94,gameState.ropePosition)); $("rope").style.left=gameState.ropePosition+"%"; $("flag").style.left=gameState.ropePosition+"%"; $("playerMarker").style.left=Math.max(3,gameState.ropePosition-34)+"%"; $("computerMarker").style.left=Math.min(91,gameState.ropePosition+30)+"%"; $("rope").classList.remove("hit"); void $("rope").offsetWidth; $("rope").classList.add("hit"); }
+    function animatePull(who){ const marker=who==="player"?$("playerMarker"):$("computerMarker"); marker.classList.remove("pull"); void marker.offsetWidth; marker.classList.add("pull"); }
+    function showCombo(){ const badge=$("comboBadge"); if(gameState.playerCombo>=2){ badge.textContent=`🔥 COMBO x${gameState.playerCombo}`; badge.classList.add("show"); }else{ badge.classList.remove("show"); } }
+    function hideCombo(){ $("comboBadge").classList.remove("show"); }
+    function checkGameEnd(){ if(gameState.ropePosition<=12)finishGame(true); else if(gameState.ropePosition>=88)finishGame(false); }
+    function finishGame(playerWin){ gameState.isPlaying=false; gameState.canAnswer=false; clearRoundTimers(); $("startBtn").disabled=false; $("pauseBtn").disabled=true; $("playerInput").disabled=true; $("submitBtn").disabled=true; $("clearBtn").disabled=true; $("gameStatus").textContent=playerWin?"🎉 玩家獲勝！":"💪 AI 對手獲勝，再挑戰一次！"; $("winnerText").textContent=playerWin?"🎉 你贏了！":"💪 AI 贏了！"; $("winnerSubText").textContent=`最終比分：玩家 ${gameState.playerScore} vs AI ${gameState.computerScore}`; $("learningReport").innerHTML=buildLearningReport(); $("winnerOverlay").classList.add("show"); saveGameResult(playerWin); }
+
+    function togglePause(){ if(!gameState.isPlaying)return; gameState.isPaused=!gameState.isPaused; if(gameState.isPaused){ clearInterval(gameState.roundInterval); $("pauseBtn").textContent="▶ 繼續"; $("gameStatus").textContent="⏸ 遊戲已暫停"; $("playerInput").disabled=true; $("submitBtn").disabled=true; }else{ $("pauseBtn").textContent="⏸ 暫停"; $("gameStatus").textContent="🎮 遊戲繼續中！"; $("playerInput").disabled=false; $("submitBtn").disabled=false; startRoundTimer(); } }
+    function resetGame(){ clearRoundTimers(); gameState.isPlaying=false; gameState.canAnswer=false; gameState.ropePosition=50; gameState.playerScore=0; gameState.computerScore=0; gameState.playerCombo=0; gameState.roundTimer=10; gameState.currentRoundLimit=10; gameState.history=[]; gameState.aiSpeedBonus=0; $("winnerOverlay").classList.remove("show"); $("playerQuestion").textContent="準備好了嗎？"; $("computerQuestion").textContent="準備好了嗎？"; $("playerFeedback").textContent="等待開始"; $("computerFeedback").textContent="AI 對手會依題目難度改變速度與正確率"; $("aiCoachText").textContent="我是 AI 數學教練：答題時可以直接輸入答案，按 Enter 送出！"; updateDifficultyHint(getCurrentLevel()); syncTimerDisplay(); $("roundTimer").style.background="#263238"; $("playerInput").value=""; $("playerInput").disabled=true; $("submitBtn").disabled=true; $("clearBtn").disabled=true; $("startBtn").disabled=false; $("pauseBtn").disabled=true; hideCombo(); updateDisplay(); updateRope(); $("gameStatus").textContent="點擊「開始挑戰」開始遊戲！"; }
+    function updateModeHint(){ if(!$("aiCoachText"))return; const timeText=$("timeMode")?$("timeMode").selectedOptions[0].textContent:"低年級慢速：10秒"; const aiText=$("aiMode")?$("aiMode").selectedOptions[0].textContent:"溫和"; const questionText=$("questionMode")?$("questionMode").selectedOptions[0].textContent:"自動"; $("aiCoachText").textContent=`AI 教練：目前設定為「${timeText}」，AI速度「${aiText}」，題目難度「${questionText}」。`; const preview=getRoundLimit(); if(!gameState.isPlaying){ gameState.roundTimer=preview; syncTimerDisplay(); } updateDifficultyHint(getCurrentLevel()); }
+    function updateDifficultyHint(levelName){ if(!$("difficultyHint"))return; const modeText=$("questionMode")?$("questionMode").selectedOptions[0].textContent:"自動"; const actualLabel=questionsByLevel[levelName]?questionsByLevel[levelName].label:"暖身"; $("difficultyHint").textContent=`題目：${actualLabel} ｜ 模式：${modeText} ｜ 時間：${getRoundLimit()}秒`; }
+    function clearPlayerInput(){ $("playerInput").value=""; $("playerInput").focus(); }
+    function getCoachFeedback(isCorrect,q,userAnswer){ if(isCorrect){ if(gameState.playerCombo>=3)return `AI 教練：太強了！連續答對 ${gameState.playerCombo} 題，繩子拉更遠！`; return `AI 教練：答對！${q.question.replace(" = ?","")} 可以想成 ${q.num1} 個 ${q.num2}。`; } return `AI 教練：你填 ${userAnswer}，但 ${q.num1} × ${q.num2} = ${q.answer}。可以用加法累加再檢查一次。`; }
+    function getLocalHint(q,userAnswer,isCorrect){ if(isCorrect)return `${q.num1} × ${q.num2} = ${q.answer}`; return `可以想成 ${q.num1} 個 ${q.num2} 相加。`; }
+    function updateAISpeedBonus(){ const recentCorrect=gameState.history.filter(item=>item.correct&&typeof item.responseTime==="number").slice(-3); if(recentCorrect.length<2)return; const avgTime=recentCorrect.reduce((sum,item)=>sum+item.responseTime,0)/recentCorrect.length; const lead=gameState.playerScore-gameState.computerScore; if(lead>=4){ gameState.aiSpeedBonus=1200; $("aiCoachText").textContent=`AI 教練：你領先太多了！AI 對手進入追趕模式。`; }else if(lead>=2){ gameState.aiSpeedBonus=Math.max(gameState.aiSpeedBonus,700); $("aiCoachText").textContent=`AI 教練：你連續答對，AI 對手開始加速追趕！`; }else if(recentCorrect.length>=3&&avgTime<=2.2){ gameState.aiSpeedBonus=Math.min(1600,gameState.aiSpeedBonus+600); $("aiCoachText").textContent=`AI 教練：你答太快了！AI 對手加速 1 秒以上。`; }else if(recentCorrect.length>=2&&avgTime<=3.0){ gameState.aiSpeedBonus=Math.min(1000,gameState.aiSpeedBonus+350); $("aiCoachText").textContent=`AI 教練：你的速度變快了，AI 對手也稍微加速！`; } }
+    function buildLearningReport(){ if(gameState.history.length===0)return "本次尚無作答紀錄。"; const total=gameState.history.length; const correct=gameState.history.filter(item=>item.correct).length; const wrongItems=gameState.history.filter(item=>!item.correct); const skippedItems=gameState.history.filter(item=>item.userAnswer==="超時"); const accuracy=Math.round((correct/total)*100); let report=`AI 學習摘要：本次作答 ${total} 題，答對 ${correct} 題，正確率 ${accuracy}%。`; if(wrongItems.length>0){ report+=`<br><br>需要再練習：${wrongItems.map(item=>`${item.question.replace(" = ?","")}（你的答案：${item.userAnswer}）`).join("、")}`; } if(skippedItems.length>0){ report+=`<br><br>⏰ 跳過或來不及的題目：${skippedItems.map(item=>item.question.replace(" = ?","")).join("、")}`; } if(wrongItems.length===0&&skippedItems.length===0){ report+="<br><br>表現很穩定，可以挑戰更進階的乘法題。"; } return report; }
+
+
+    async function saveGameResult(playerWin) {
+      const payload = {
+        student: gameState.student,
+        winner: playerWin ? "玩家" : "AI",
+        playerScore: gameState.playerScore,
+        computerScore: gameState.computerScore,
+        timeMode: $("timeMode") ? $("timeMode").selectedOptions[0].textContent : "",
+        aiMode: $("aiMode") ? $("aiMode").selectedOptions[0].textContent : "",
+        questionMode: $("questionMode") ? $("questionMode").selectedOptions[0].textContent : "",
+        history: gameState.history,
+        learningReport: buildLearningReport(),
+        finishedAt: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch("/api/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        if (!result.ok && !result.success) {
+          console.warn("紀錄寫入失敗：", result);
+        }
+      } catch (error) {
+        console.warn("無法寫入紀錄：", error);
+      }
+    }
+
+    async function getAIAdvice() {
+      const payload = {
+        student: gameState.student,
+        playerScore: gameState.playerScore,
+        computerScore: gameState.computerScore,
+        history: gameState.history,
+        report: buildLearningReport()
+      };
+
+      try {
+        const res = await fetch("/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        return data.feedback || "";
+      } catch (error) {
+        console.warn("AI 建議產生失敗：", error);
+        return "";
+      }
+    }
+
+    document.addEventListener("keydown",(e)=>{ if(!gameState.isPlaying||!gameState.canAnswer||gameState.isPaused)return; if(e.key==="Enter"){ e.preventDefault(); submitPlayerAnswer(); } });
+    document.addEventListener("keydown",(e)=>{ if(e.key==="Escape")togglePause(); });
+    resetGame(); updateModeHint();
+  </script>
+</body>
+</html>
